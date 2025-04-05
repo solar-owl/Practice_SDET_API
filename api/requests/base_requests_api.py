@@ -21,10 +21,9 @@ class BaseApi:
         """
         self.response = None
         self.headers = None
-        self.body = None
         self.timeout = 10
 
-    def request_get(self, url: str, **kwargs: dict) -> Response | None:
+    def request_get(self, url: str, **kwargs: dict) -> Response:
         """
         Отправляет GET запрос по указанному URL.
         :param url: Ссылка для запроса.
@@ -36,13 +35,11 @@ class BaseApi:
             response.raise_for_status()
             return response
         except requests.exceptions.Timeout:
-            print("The request timed out.")
-            return None
+            raise TimeoutError("The request timed out.")
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при выполнении GET запроса: {e}")
-            return None
+            raise RuntimeError(f"Ошибка при выполнении GET запроса: {e}")
 
-    def request_get_negative(self, url: str, **kwargs: dict) -> Response | None:
+    def request_get_negative(self, url: str, **kwargs: dict) -> Response:
         """
         Отправляет GET запрос по указанному URL без отлова ошибок.
         :param url: Ссылка для запроса.
@@ -53,10 +50,11 @@ class BaseApi:
             response = requests.get(url, headers=self.headers, **kwargs, timeout=self.timeout)
             return response
         except requests.exceptions.Timeout:
-            print("The request timed out.")
-            return None
+            raise TimeoutError("The request timed out.")
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Ошибка при выполнении GET запроса: {e}")
 
-    def request_post(self, url: str, **kwards: dict) -> Response | None:
+    def request_post(self, url: str, **kwards: dict) -> Response:
         """
         Отправляет POST запрос по указанному URL.
         :param url: Ссылка для запроса.
@@ -68,13 +66,11 @@ class BaseApi:
             response.raise_for_status()
             return response
         except requests.exceptions.Timeout:
-            print("The request timed out.")
-            return None
+            raise TimeoutError("The request timed out.")
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при выполнении POST запроса: {e}")
-            return None
+            raise RuntimeError(f"Ошибка при выполнении POST запроса: {e}")
 
-    def request_patch(self, url: str, **kwargs: dict) -> Response | None:
+    def request_patch(self, url: str, **kwargs: dict) -> Response:
         """
         Отправляет PATCH запрос по указанному URL.
         :param url: Ссылка для запроса.
@@ -86,13 +82,11 @@ class BaseApi:
             response.raise_for_status()
             return response
         except requests.exceptions.Timeout:
-            print("The request timed out.")
-            return None
+            raise TimeoutError("The request timed out.")
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при выполнении PATCH запроса: {e}")
-            return None
+            raise RuntimeError(f"Ошибка при выполнении PATCH запроса: {e}")
 
-    def request_delete(self, url: str, **kwargs: dict) -> Response | None:
+    def request_delete(self, url: str, **kwargs: dict) -> Response:
         """
         Отправляет DELETE запрос по указанному URL.
         :param url: Ссылка для запроса.
@@ -104,11 +98,9 @@ class BaseApi:
             response.raise_for_status()
             return response
         except requests.exceptions.Timeout:
-            print("The request timed out.")
-            return None
+            raise TimeoutError("The request timed out.")
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при выполнении DELETE запроса: {e}")
-            return None
+            raise RuntimeError(f"Ошибка при выполнении DELETE запроса: {e}")
 
     def check_response_is_200(self) -> bool:
         """
@@ -139,6 +131,10 @@ class BaseApi:
         Возвращает тело ответа в виде словаря.
         :return: Словарь с данными ответа.
         """
+        if self.response is None:
+            raise ValueError(
+                "Ответ сервера отсутствует. Проверьте выполнение запроса."
+            )
         return self.response.json()
 
     def get_text(self) -> str:
@@ -146,7 +142,6 @@ class BaseApi:
         Получает id сущности из ответа.
         :return: Идентификатор сущности.
         """
-        print(self.response)
         if self.response is None:
             raise ValueError(
                 "Ответ сервера отсутствует. Проверьте выполнение запроса."

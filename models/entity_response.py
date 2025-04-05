@@ -1,3 +1,4 @@
+import pydantic
 from pydantic import BaseModel
 from typing import List
 from models.additional_response import AdditionalResponse
@@ -18,3 +19,13 @@ class EntityResponse(BaseModel):
     important_numbers: List[int]
     title: str
     verified: bool
+
+
+class EntityResponseList(BaseModel):
+    """
+    Модель для получения списка сущностей.
+
+    Attributes:
+        entity: список сущностей
+    """
+    entity: List[EntityResponse]

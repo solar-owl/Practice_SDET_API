@@ -5,7 +5,8 @@
 """
 import allure
 from api.requests.base_requests_api import BaseApi
-from data.data import URL_DELETE, HEADER_DELETE
+from data.data_headers import HEADER_DELETE
+from data.data_urls import URL_DELETE
 
 
 class DeleteObject(BaseApi):

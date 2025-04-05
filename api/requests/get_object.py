@@ -3,10 +3,13 @@
 
 Содержит класс и функции для получения информации о сущности.
 """
-import json
 import allure
+from pydantic import ValidationError
 from api.requests.base_requests_api import BaseApi
-from data.data import URL_GET, HEADER_GET
+from data.data_headers import HEADER_GET
+from data.data_urls import URL_GET
+from models.entity_request import EntityRequest
+from models.entity_response import EntityResponse
 
 
 class GetObject(BaseApi):
@@ -20,6 +23,7 @@ class GetObject(BaseApi):
         """
         super().__init__()
         self.headers = HEADER_GET
+        self.entity = None
 
     def get_by_id(self, id_object: str) -> None:
         """
@@ -31,7 +35,12 @@ class GetObject(BaseApi):
         url = URL_GET.format(id=id_object)
         with allure.step(f'Получение сущности по id:{id_object}'):
             self.response = self.request_get(url)
-        self.body = self.get_body()
+            try:
+                self.entity = EntityResponse.model_validate(self.get_body())
+            except ValidationError as e:
+                raise ValidationError(
+                    "Ошибка валидации данных", e.json()
+                ) from e
 
     def get_by_id_negative(self, id_object: str) -> None:
         """
@@ -42,7 +51,6 @@ class GetObject(BaseApi):
         url = URL_GET.format(id=id_object)
         with allure.step(f'Получение сущности по id:{id_object}'):
             self.response = self.request_get_negative(url)
-        self.body = self.get_body()
 
     def check_id(self, id_object: str) -> bool:
         """
@@ -52,8 +60,8 @@ class GetObject(BaseApi):
         в противном случае False.
         """
         with allure.step('Проверка, что id совпадает с id из ответа'):
-            return (self.body['id'] == int(id_object) and
-                    self.body['addition']['id'] == int(id_object))
+            return ((self.entity.id == int(id_object)) and
+                    (self.entity.addition.id == int(id_object)))
 
     def check_param_in_body_for_create(self, body_object: str) -> bool:
         """
@@ -64,12 +72,15 @@ class GetObject(BaseApi):
         :return: True, если тела запроса одинаковы,
         False в противном случае.
         """
-        get_body = self.body
-        get_body.pop('id')
-        get_body['addition'].pop('id')
-        body_object = json.loads(body_object)
-        with allure.step('Проверка, что параметры совпадают с параметрами из ответа'):
-            return get_body == body_object
+        entity_response = self.entity.model_dump(exclude={
+            "id": True,
+            "addition": {"id"}
+        })
+        entity_request = EntityRequest.model_validate_json(body_object).model_dump()
+        with allure.step(
+                'Проверка, что параметры созданной сущности совпадают с параметрами из ответа'
+        ):
+            return entity_response == entity_request
 
     def check_param_in_body(self, body_object: str) -> bool:
         """
@@ -80,4 +91,4 @@ class GetObject(BaseApi):
         False в противном случае.
         """
         with allure.step('Проверка, что тело ответа соответствует ожидаемому'):
-            return self.body == body_object
+            return self.get_body() == body_object

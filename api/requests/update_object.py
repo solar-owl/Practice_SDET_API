@@ -4,9 +4,9 @@
 Содержит класс и функции для изменения сущности.
 """
 import allure
-
 from api.requests.base_requests_api import BaseApi
-from data.data import URL_UPDATE, HEADER_WITH_BODY
+from data.data_headers import HEADER_WITH_BODY
+from data.data_urls import URL_UPDATE
 
 
 class UpdateObject(BaseApi):

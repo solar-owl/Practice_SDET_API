@@ -5,7 +5,7 @@
 """
 import allure
 import pytest
-from data.data import RES_NO_OBJECT
+from data.data_headers import RES_NO_OBJECT
 from data.generate_request import create_entity_request
 
 
@@ -28,12 +28,15 @@ def test_create_object(create_object_endpoint, get_object_endpoint, delete_objec
     """
     create_body = create_entity_request()
     create_object_endpoint.new_object(create_body)
-    assert create_object_endpoint.check_response_is_200()
+    assert create_object_endpoint.check_response_is_200(), \
+        "Статус код ответа не равен 200"
     id_object = create_object_endpoint.get_id()
     delete_objects.append(id_object)
     get_object_endpoint.get_by_id(id_object)
-    assert get_object_endpoint.check_id(id_object)
-    assert get_object_endpoint.check_param_in_body_for_create(create_body)
+    assert get_object_endpoint.check_id(id_object), \
+        "Идентификатор из ответа не соответствует ожидаемому"
+    assert get_object_endpoint.check_param_in_body_for_create(create_body), \
+        "Параметры из ответа не соответствует ожидаемым"
 
 
 @allure.epic("Тестирование точек доступа для управления сущностями")
@@ -54,10 +57,13 @@ def test_delete_object(create_object, delete_object_endpoint, get_object_endpoin
     :return: None.
     """
     delete_object_endpoint.delete_object_by_id(create_object)
-    assert delete_object_endpoint.check_response_is_204()
+    assert delete_object_endpoint.check_response_is_204(), \
+        "Статус код ответа не равен 204"
     get_object_endpoint.get_by_id_negative(create_object)
-    assert get_object_endpoint.check_response_is_500()
-    assert get_object_endpoint.check_param_in_body(RES_NO_OBJECT)
+    assert get_object_endpoint.check_response_is_500(), \
+        "Статус код ответа не равен 500"
+    assert get_object_endpoint.check_param_in_body(RES_NO_OBJECT), \
+        "Параметры из ответа не соответствует ожидаемым"
 
 
 @allure.epic("Тестирование точек доступа для управления сущностями")
@@ -77,8 +83,10 @@ def test_get_object(get_object_id, get_object_endpoint):
     :return: None.
     """
     get_object_endpoint.get_by_id(get_object_id)
-    assert get_object_endpoint.check_response_is_200()
-    assert get_object_endpoint.check_id(get_object_id)
+    assert get_object_endpoint.check_response_is_200(), \
+        "Статус код ответа не равен 200"
+    assert get_object_endpoint.check_id(get_object_id), \
+        "Идентификатор из ответа не соответствует ожидаемому"
 
 
 @allure.epic("Тестирование точек доступа для управления сущностями")
@@ -101,8 +109,10 @@ def test_get_all_objects(get_multiple_ids_objects, get_all_objects_endpoint):
     with allure.step('Получение id созданных сущностей'):
         ids_to_check = get_multiple_ids_objects
     get_all_objects_endpoint.get_all()
-    assert get_all_objects_endpoint.check_response_is_200()
-    assert get_all_objects_endpoint.check_ids_in_response(ids_to_check)
+    assert get_all_objects_endpoint.check_response_is_200(), \
+        "Статус код ответа не равен 200"
+    assert get_all_objects_endpoint.check_ids_in_response(ids_to_check), \
+        "Идентификаторы из ответа не содержат идентификаторы созданных сущностей"
 
 
 @allure.epic("Тестирование точек доступа для управления сущностями")
@@ -124,7 +134,10 @@ def test_update_object(get_object_id, update_object_endpoint, get_object_endpoin
     """
     new_param_for_obj = create_entity_request()
     update_object_endpoint.update_object_by_id(get_object_id, new_param_for_obj)
-    assert update_object_endpoint.check_response_is_204()
+    assert update_object_endpoint.check_response_is_204(), \
+        "Статус код ответа не равен 204"
     get_object_endpoint.get_by_id(get_object_id)
-    assert get_object_endpoint.check_id(get_object_id)
-    assert get_object_endpoint.check_param_in_body_for_create(new_param_for_obj)
+    assert get_object_endpoint.check_id(get_object_id), \
+        "Идентификатор из ответа не соответствует ожидаемому"
+    assert get_object_endpoint.check_param_in_body_for_create(new_param_for_obj), \
+        "Параметры из ответа не соответствует ожидаемым"

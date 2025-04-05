@@ -5,7 +5,8 @@
 """
 import allure
 from api.requests.base_requests_api import BaseApi
-from data.data import URL_CREATE, HEADER_WITH_BODY
+from data.data_headers import HEADER_WITH_BODY
+from data.data_urls import URL_CREATE
 
 
 class CreateObject(BaseApi):
@@ -39,4 +40,4 @@ class CreateObject(BaseApi):
                 "Ответ сервера отсутствует. Проверьте выполнение запроса."
             )
         with allure.step('Получение id новой сущности'):
-            return self.response.text
+            return self.get_text()
